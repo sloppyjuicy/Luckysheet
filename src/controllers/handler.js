@@ -68,6 +68,8 @@ import { luckysheetDrawMain } from "../global/draw";
 import locale from "../locale/locale";
 import Store from "../store";
 import { createLuckyChart, hideAllNeedRangeShow } from "../expendPlugins/chart/plugin";
+import luckysheetformula from "../global/formula";
+import {createExportDialog,fetchAndDownloadXlsx} from "../expendPlugins/exportXlsx/plugin";
 
 //, columeflowset, rowflowset
 export default function luckysheetHandler() {
@@ -383,6 +385,7 @@ export default function luckysheetHandler() {
 
             //数据验证 单元格聚焦
             dataVerificationCtrl.cellFocus(row_index, col_index, true);
+            luckysheetformula.cellFocus(row_index, col_index);
 
             //若点击单元格部分不在视图内
             if (col_pre < $("#luckysheet-cell-main").scrollLeft()) {
@@ -663,8 +666,7 @@ export default function luckysheetHandler() {
                         }
 
                         let $span = $editor.find("span[rangeindex='" + formula.rangechangeindex + "']");
-                        if($span && $span!=undefined && $span !=null && $span && $span.html().length)
-                        {
+                        if ($span && $span != undefined && $span != null && $span && $span.html().length) {
                             formula.setCaretPosition($span.get(0), 0, $span.html().length);
                         }
                     }, 1);
@@ -942,7 +944,7 @@ export default function luckysheetHandler() {
                 selectionCopyShow(dataVerificationCtrl.selectRange);
 
                 let range = dataVerificationCtrl.getTxtByRange(dataVerificationCtrl.selectRange);
-                if (formula.rangetosheet && formula.rangetosheet!= Store.currentSheetIndex) {
+                if (formula.rangetosheet && formula.rangetosheet != Store.currentSheetIndex) {
                     range = Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)].name + "!" + range;
                 }
                 $("#luckysheet-dataVerificationRange-dialog input").val(range);
@@ -5612,6 +5614,20 @@ export default function luckysheetHandler() {
         e.preventDefault();
     });
 
+    //菜单栏 导出按钮
+    $("#luckysheet-exportXlsx-btn-title").click(function() {
+
+        const exportXlsxInfo =  Store.plugins.find(plugin => plugin.name === 'exportXlsx')
+        if(exportXlsxInfo){
+            const url = exportXlsxInfo?.config?.url;
+            if(url){
+                createExportDialog(url)
+            }
+        }else{
+            tooltip.info(_locale.exportXlsx.notice, "");
+        }
+    });
+
     let copychange = function() {
         if (document.hidden || document.webkitHidden || document.msHidden) {
             Store.iscopyself = false;
@@ -5889,7 +5905,7 @@ export default function luckysheetHandler() {
         formula.functionResizeData.y = y;
         formula.functionResizeStatus = true;
         formula.functionResizeData.calculatebarHeight = Store.calculatebarHeight;
-        if (formula.rangetosheet  && formula.rangetosheet!= null) {
+        if (formula.rangetosheet && formula.rangetosheet != null) {
             formula.updatecell(Store.luckysheetCellUpdate[0], Store.luckysheetCellUpdate[1]);
         }
     });
@@ -6048,29 +6064,13 @@ export default function luckysheetHandler() {
             } else if (txtdata.indexOf("luckysheet_copy_action_image") > -1) {
                 imageCtrl.pasteImgItem();
             } else {
-                let $content;
-                try {
-                    $content = $("#luckysheet-copy-content").html(txtdata);
-                } catch (e) {
-                    // clipboard text may not be in HTML format
-                }
-                // note: Google Spreadsheet: single cell copy will contain a <span>, multiple cells copy will contain a <table>
-                if (
-                    $content &&
-                    ($content.find("table").length !== 0 || $content.children("span[data-sheets-value]").length === 1)
-                ) {
-                    if ($content.find("table").length === 0) {
-                        const td = $content
-                            .children("span[data-sheets-value]")[0]
-                            .outerHTML.replace(/^<span/, "<td")
-                            .replace(/<\/span>$/, "</td>");
-                        $content.html("<table><tbody><tr>" + td + "</tr></tbody></table>");
-                    }
+                if (txtdata.indexOf("table") > -1) {
+                    $("#luckysheet-copy-content").html(txtdata);
 
-                    let data = new Array($content.find("table tr").length);
+                    let data = new Array($("#luckysheet-copy-content").find("table tr").length);
                     let colLen = 0;
                     const cellElements = "th, td";
-                    $content
+                    $("#luckysheet-copy-content")
                         .find("table tr")
                         .eq(0)
                         .find(cellElements)
@@ -6088,137 +6088,23 @@ export default function luckysheetHandler() {
 
                     let r = 0;
                     let borderInfo = {};
-                    $content.find("table tr").each(function() {
-                        let $tr = $(this);
-                        let c = 0;
-                        $tr.find(cellElements).each(function() {
-                            let $td = $(this);
-                            let cell = {};
-                            // note: Google Spreadsheet: copied formula cell has the formula in R1C1 format
-                            const originalFormula = $td.attr("data-sheets-formula");
-                            const originalText = $td.text();
-                            if (originalFormula && originalFormula.startsWith("=")) {
-                                const address = Store.luckysheet_select_save[0];
-                                const rowIndex = address.row[0] + r;
-                                const columnIndex = address.column[0] + c;
-                                const translatedFormula = originalFormula
-                                    // R1C1 format -> A1 format
-                                    .replace(/([^a-zA-Z0-9])R(\[?)(-?[0-9]+)\]?C(\[?)(-?[0-9]+)\]?/g, function(
-                                        _,
-                                        prefix,
-                                        rowRefRelative,
-                                        rowRef,
-                                        columnRefRelative,
-                                        columnRef,
-                                    ) {
-                                        return [
-                                            prefix,
-                                            columnRefRelative
-                                                ? chatatABC(columnIndex + +columnRef)
-                                                : `$${chatatABC(+columnRef - 1)}`,
-                                            rowRefRelative ? rowIndex + +rowRef + 1 : `$${rowRef}`,
-                                        ].join("");
-                                    })
-                                    // TRUE -> true, FALSE -> false (Luckysheet can interpret lowercase "true" literal or "TRUE()" function, but not "TRUE".)
-                                    .replace(/\bTRUE\b/g, "true")
-                                    .replace(/\bFALSE\b/g, "false");
-                                const v = formula.execfunction(translatedFormula, rowIndex, columnIndex);
-                                cell.f = v[2];
-                                cell.v = v[1];
-                                cell.ct = genarate(originalText)[1];
-                                if (cell.ct && cell.ct.fa) {
-                                    cell.m = update(cell.ct.fa, cell.v);
-                                }
-                            } else if (originalText.trim().length === 0) {
-                                cell.v = null;
-                                cell.m = "";
-                            } else {
-                                let mask = genarate(originalText);
-                                cell.v = mask[2];
-                                cell.ct = mask[1];
-                                cell.m = mask[0];
-                            }
-
-                            let bg = $td.css("background-color");
-                            if (bg == "rgba(0, 0, 0, 0)") {
-                                bg = null;
-                            }
-
-                            cell.bg = bg;
-
-                            let bl = $td.css("font-weight");
-                            if (bl == 400 || bl == "normal") {
-                                cell.bl = 0;
-                            } else {
-                                cell.bl = 1;
-                            }
-
-                            // 检测下划线
-                            let un = $td.css("text-decoration");
-                            if (un.indexOf("underline") != -1) {
-                                cell.un = 1;
-                            }
-
-                            let it = $td.css("font-style");
-                            if (it == "normal") {
-                                cell.it = 0;
-                            } else {
-                                cell.it = 1;
-                            }
-
-                            let ff = $td.css("font-family");
-                            let ffs = ff.split(",");
-                            for (let i = 0; i < ffs.length; i++) {
-                                let fa = $.trim(ffs[i].toLowerCase());
-                                fa = locale_fontjson[fa];
-                                if (fa == null) {
-                                    cell.ff = 0;
+                    $("#luckysheet-copy-content")
+                        .find("table tr")
+                        .each(function() {
+                            let $tr = $(this);
+                            let c = 0;
+                            $tr.find(cellElements).each(function() {
+                                let $td = $(this);
+                                let cell = {};
+                                let txt = $td.text();
+                                if ($.trim(txt).length == 0) {
+                                    cell.v = null;
+                                    cell.m = "";
                                 } else {
-                                    cell.ff = fa;
-                                    break;
-                                }
-                            }
-                            let fs = Math.round((parseInt($td.css("font-size")) * 72) / 96);
-                            cell.fs = fs;
-
-                            let fc = $td.css("color");
-                            cell.fc = fc;
-
-                            // 水平对齐属性
-                            let ht = $td.css("text-align");
-                            if (ht == "center") {
-                                cell.ht = 0;
-                            } else if (ht == "right") {
-                                cell.ht = 2;
-                            } else {
-                                cell.ht = 1;
-                            }
-
-                            // 垂直对齐属性
-                            let vt = $td.css("vertical-align");
-                            if (vt == "middle") {
-                                cell.vt = 0;
-                            } else if (vt == "top" || vt == "text-top") {
-                                cell.vt = 1;
-                            } else {
-                                cell.vt = 2;
-                            }
-
-                            while (c < colLen && data[r][c] != null) {
-                                c++;
-                            }
-
-                            if (c == colLen) {
-                                return true;
-                            }
-
-                            if (data[r][c] == null) {
-                                data[r][c] = cell;
-                                let rowspan = parseInt($td.attr("rowspan"));
-                                let colspan = parseInt($td.attr("colspan"));
-
-                                if (isNaN(rowspan)) {
-                                    rowspan = 1;
+                                    let mask = genarate($td.text());
+                                    cell.v = mask[2];
+                                    cell.ct = mask[1];
+                                    cell.m = mask[0];
                                 }
 
                                 let bg = $td.css("background-color");
@@ -6233,6 +6119,12 @@ export default function luckysheetHandler() {
                                     cell.bl = 0;
                                 } else {
                                     cell.bl = 1;
+                                }
+
+                                // 检测下划线
+                                let un = $td.css("text-decoration");
+                                if (un.indexOf("underline") != -1) {
+                                    cell.un = 1;
                                 }
 
                                 let it = $td.css("font-style");
@@ -6260,6 +6152,7 @@ export default function luckysheetHandler() {
                                 let fc = $td.css("color");
                                 cell.fc = fc;
 
+                                // 水平对齐属性
                                 let ht = $td.css("text-align");
                                 if (ht == "center") {
                                     cell.ht = 0;
@@ -6269,6 +6162,7 @@ export default function luckysheetHandler() {
                                     cell.ht = 1;
                                 }
 
+                                // 垂直对齐属性
                                 let vt = $td.css("vertical-align");
                                 if (vt == "middle") {
                                     cell.vt = 0;
@@ -6415,14 +6309,16 @@ export default function luckysheetHandler() {
                                 if (c == colLen) {
                                     return true;
                                 }
-                            }
+                            });
 
                             r++;
                         });
-                    });
+
                     Store.luckysheet_selection_range = [];
                     selection.pasteHandler(data, borderInfo);
+                    $("#luckysheet-copy-content").empty();
                 }
+
                 //复制的是图片
                 else if (clipboardData.files.length == 1 && clipboardData.files[0].type.indexOf("image") > -1) {
                     imageCtrl.insertImg(clipboardData.files[0]);

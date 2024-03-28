@@ -24,27 +24,27 @@ const conditionformat = {
 
         return `<div class="ruleTypeBox">
                     <div class="ruleTypeItem">
-                        <span class="icon iconfont luckysheet-iconfont-youjiantou"></span>
+                        <span class="icon iconfont-luckysheet luckysheet-iconfont-youjiantou"></span>
                         <span>${conditionformat_Text.ruleTypeItem1}</span>
                     </div>
                     <div class="ruleTypeItem">
-                        <span class="icon iconfont luckysheet-iconfont-youjiantou"></span>
+                        <span class="icon iconfont-luckysheet luckysheet-iconfont-youjiantou"></span>
                         <span>${conditionformat_Text.ruleTypeItem2}</span>
                     </div>
                     <div class="ruleTypeItem">
-                        <span class="icon iconfont luckysheet-iconfont-youjiantou"></span>
+                        <span class="icon iconfont-luckysheet luckysheet-iconfont-youjiantou"></span>
                         <span>${conditionformat_Text.ruleTypeItem3}</span>
                     </div>
                     <div class="ruleTypeItem">
-                        <span class="icon iconfont luckysheet-iconfont-youjiantou"></span>
+                        <span class="icon iconfont-luckysheet luckysheet-iconfont-youjiantou"></span>
                         <span>${conditionformat_Text.ruleTypeItem4}</span>
                     </div>
                     <div class="ruleTypeItem">
-                        <span class="icon iconfont luckysheet-iconfont-youjiantou"></span>
+                        <span class="icon iconfont-luckysheet luckysheet-iconfont-youjiantou"></span>
                         <span>${conditionformat_Text.ruleTypeItem5}</span>
                     </div>
                     <div class="ruleTypeItem">
-                        <span class="icon iconfont luckysheet-iconfont-youjiantou"></span>
+                        <span class="icon iconfont-luckysheet luckysheet-iconfont-youjiantou"></span>
                         <span>${conditionformat_Text.ruleTypeItem6}</span>
                     </div>
                 </div>`;
@@ -336,7 +336,8 @@ const conditionformat = {
                                 if(r1 == r2 && c1 == c2){
                                     v1 = getcellvalue(r1, c1, Store.flowdata);
 
-                                    conditionRange.push({ "row": rangeArr1[0].row, "column": rangeArr1[0].column });
+                                    // conditionRange.push({ "row": rangeArr1[0].row, "column": rangeArr1[0].column });
+                                    conditionRange[0] = { "row": rangeArr1[0].row, "column": rangeArr1[0].column };
                                     conditionValue.push(v1);
                                 }
                                 else{
@@ -366,7 +367,10 @@ const conditionformat = {
                                 if(r1 == r2 && c1 == c2){
                                     v2 = getcellvalue(r1, c1, Store.flowdata);
 
-                                    conditionRange.push({ "row": rangeArr2[0].row, "column": rangeArr2[0].column });
+                                    // conditionRange.push({ "row": rangeArr2[0].row, "column": rangeArr2[0].column });
+
+                                    // If the first value is a custom value, and the cell range selected by the second value, push will cause the position to be wrong
+                                    conditionRange[1] = { "row": rangeArr2[0].row, "column": rangeArr2[0].column };
                                     conditionValue.push(v2);
                                 }
                                 else{
@@ -721,7 +725,8 @@ const conditionformat = {
                                 if(r1 == r2 && c1 == c2){
                                     v1 = getcellvalue(r1, c1, Store.flowdata);
 
-                                    conditionRange.push({ "row": rangeArr1[0].row, "column": rangeArr1[0].column });
+                                    // conditionRange.push({ "row": rangeArr1[0].row, "column": rangeArr1[0].column });
+                                    conditionRange[0] = { "row": rangeArr1[0].row, "column": rangeArr1[0].column };
                                     conditionValue.push(v1);
                                 }
                                 else{
@@ -751,7 +756,8 @@ const conditionformat = {
                                 if(r1 == r2 && c1 == c2){
                                     v2 = getcellvalue(r1, c1, Store.flowdata);
 
-                                    conditionRange.push({ "row": rangeArr2[0].row, "column": rangeArr2[0].column });
+                                    // conditionRange.push({ "row": rangeArr2[0].row, "column": rangeArr2[0].column });
+                                    conditionRange[1] = { "row": rangeArr2[0].row, "column": rangeArr2[0].column };
                                     conditionValue.push(v2);
                                 }
                                 else{
@@ -1108,7 +1114,8 @@ const conditionformat = {
                     if(r1 == r2 && c1 == c2){
                         v1 = getcellvalue(r1, c1, Store.flowdata);
 
-                        conditionRange.push({ "row": rangeArr1[0].row, "column": rangeArr1[0].column });
+                        // conditionRange.push({ "row": rangeArr1[0].row, "column": rangeArr1[0].column });
+                        conditionRange[0] = { "row": rangeArr1[0].row, "column": rangeArr1[0].column };
                         conditionValue.push(v1);
                     }
                     else{
@@ -1138,7 +1145,8 @@ const conditionformat = {
                     if(r1 == r2 && c1 == c2){
                         v2 = getcellvalue(r1, c1, Store.flowdata);
 
-                        conditionRange.push({ "row": rangeArr2[0].row, "column": rangeArr2[0].column });
+                        // conditionRange.push({ "row": rangeArr2[0].row, "column": rangeArr2[0].column });
+                        conditionRange[1] = { "row": rangeArr2[0].row, "column": rangeArr2[0].column };
                         conditionValue.push(v2);
                     }
                     else{
@@ -2450,12 +2458,16 @@ const conditionformat = {
     },
     daterangeInit: function(id){
         const conditionformat_Text = locale().conditionformat;
+        const regexSingleDate = /^\d{4}-\d{2}-\d{2}$/; // 匹配  "YYYY-MM-DD"
+        const regexStartEndDate = /^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/; // 匹配 "YYYY-MM-DD to YYYY-MM-DD"
+        // const regexStartEndDate = /^(\d{4}-\d{2}-\d{2})( to (\d{4}-\d{2}-\d{2}))?$/; // 
 
         //日期选择插件
         $('.ranges_1 ul').remove();
-        $('#' + id).find("#daterange-btn").flatpickr({
+        const daterangeBtn = $('#' + id).find("#daterange-btn")
+        daterangeBtn.flatpickr({
             mode: "range",
-            onChange: function (data, label) {
+            onChange:  (data, label) => {
                 const [start, end] = data
                 //label:通过它来知道用户选择的是什么，传给后台进行相应的展示
                 let format1 = [
@@ -2475,11 +2487,21 @@ const conditionformat = {
                 ]
 
                 if (label == conditionformat_Text.all) {
-                    $('#daterange-btn').val('');
+                    daterangeBtn.val('');
                 } else if (format1.indexOf(label) > -1) {
-                    $('#daterange-btn').val(dayjs(start).format('YYYY/MM/DD'));
+                    daterangeBtn.val(dayjs(start).format('YYYY/MM/DD'));
                 } else if (format2.indexOf(label) > -1) {
-                    $('#daterange-btn').val(dayjs(start).format('YYYY/MM/DD') + '-' + dayjs(end).format('YYYY/MM/DD'));
+                    daterangeBtn.val(dayjs(start).format('YYYY/MM/DD') + '-' + dayjs(end).format('YYYY/MM/DD'));
+                }
+
+                // 匹配  "2023-05-17 to 2023-05-19"
+                const isValidSingleFormat = regexSingleDate.test(label);
+                const isValidStartEndFormat = regexStartEndDate.test(label);
+                if(isValidSingleFormat){
+                    daterangeBtn.val(dayjs(start).format('YYYY/MM/DD'));
+                }else if(isValidStartEndFormat){
+                    daterangeBtn.val(dayjs(start).format('YYYY/MM/DD') + '-' + dayjs(end).format('YYYY/MM/DD'));
+
                 }
             }
         });

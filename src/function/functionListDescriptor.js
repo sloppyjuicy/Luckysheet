@@ -1100,6 +1100,66 @@ export default [
         ]
     },
     {
+        "n": "GET_TARGET",
+        "t": 0,
+        "m": [
+            0,
+            0
+        ],
+        "p": [
+        ]
+    },
+    {
+        "n": "GET_AIRTABLE_DATA",
+        "t": 0,
+        "m": [
+            1,
+            3
+        ],
+        "p": [
+            {
+                "example": "https://airtable.com/apppqwer/tblpoi/viwmnb",
+                "require": "m",
+                "repeat": "n",
+                "type": "rangeall"
+            },
+            {
+                "example": "0",
+                "require": "m",
+                "repeat": "n",
+                "type": "rangenumber"
+            },
+            {
+                "example": "1",
+                "require": "m",
+                "repeat": "n",
+                "type": "rangenumber"
+            },
+        ]
+    },
+    {
+        "n": "ASK_AI",
+        "t": 0,
+        "m": [
+            1,
+            2
+        ],
+        "p": [
+            {
+                "example": "I need an accountability goal achievement",
+                "require": "m",
+                "repeat": "n",
+                "type": "rangeall"
+            },
+            {
+                "example": "B1:B10",
+                "require": "m",
+                "repeat": "n",
+                "type": "range"
+            },
+        ]
+    },
+    {
         "n": "COUNTIFS",
         "t": 1,
         "m": [
@@ -9053,5 +9113,5 @@ export default [
                 "type": "string"
             }
         ]
-    }
+    },
 ]

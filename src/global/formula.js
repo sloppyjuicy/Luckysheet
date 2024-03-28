@@ -437,7 +437,7 @@ const luckysheetformula = {
             for (let c = 0; c < range[0].length; c++) {
                 if (range[0][c] != null && range[0][c].v) {
                     rangeNow.push(range[0][c].v);
-                    let f = range[0][c].ct.fa;
+                    let f = range[0][c].ct?.fa;
                     fmt = fmt == "General" ? f : fmt;
                 } else {
                     //若单元格为null或为空，此处推入null（待考虑是否使用"null"）
@@ -449,7 +449,7 @@ const luckysheetformula = {
             for (let r = 0; r < range.length; r++) {
                 if (range[r][0] != null && range[r][0].v) {
                     rangeNow.push(range[r][0].v);
-                    let f = range[r][0].ct.fa;
+                    let f = range[r][0].ct?.fa;
                     fmt = fmt == "General" ? f : fmt;
                 } else {
                     rangeNow.push(null);
@@ -460,7 +460,7 @@ const luckysheetformula = {
                 for (let c = 0; c < range[r].length; c++) {
                     if (range[r][c] != null && range[r][c].v) {
                         rangeNow.push(range[r][c].v);
-                        let f = range[r][c].ct.fa;
+                        let f = range[r][c].ct?.fa;
                         fmt = fmt == "General" ? f : fmt;
                     } else {
                         rangeNow.push(null);
@@ -468,6 +468,8 @@ const luckysheetformula = {
                 }
             }
         }
+
+        fmt = fmt ?? "General";
 
         range = rangeNow;
 
@@ -740,6 +742,11 @@ const luckysheetformula = {
             sheetIndex = luckysheetfile[index].index;
             sheetdata = Store.flowdata;
             rangetxt = txt;
+        }
+
+        // fix =VLOOKUP(D9,数据透视表!A:D,2,0)
+        if(sheetdata == null){
+            return null
         }
 
         if (rangetxt.indexOf(":") == -1) {
@@ -1755,7 +1762,6 @@ const luckysheetformula = {
         if (val.length > 1) {
             // Supports cross-table references
             rangetxt = val[1];
-            
         } else {
             rangetxt = val[0];
         }
@@ -4249,6 +4255,20 @@ const luckysheetformula = {
                             }
                         }
 
+                        // 修复类似=1--1、=1---1、=1+--+1--1这类连续+-混合写法计算结果和wps和office不一致的bug, by @kdevilpf 2023-10-08
+                        for (ls = i + 1; ls < funcstack.length; ls++) {
+                            if (["--", "++"].includes(s + funcstack[ls])) {
+                                s = "+";
+                            } else if (["-+", "+-"].includes(s + funcstack[ls])) {
+                                s = "-";
+                            } else {
+                                if (ls > i + 1) {
+                                    i = ls - 1;
+                                }
+                                break;
+                            }
+                        }
+
                         cal1.unshift(s);
 
                         function_str = "";
@@ -5994,7 +6014,7 @@ const luckysheetformula = {
                     let funcgStr = funcg[i].split("')")[0];
                     let funcgRange = _this.getcellrange(funcgStr);
 
-                    if (funcgRange.row[0] < 0 || funcgRange.column[0] < 0) {
+                    if (!funcgRange || funcgRange.row[0] < 0 || funcgRange.column[0] < 0) {
                         return [true, _this.error.r, txt];
                     }
 
@@ -6044,9 +6064,10 @@ const luckysheetformula = {
                     result = result.data.v;
                 } else if (!isRealNull(result.data)) {
                     //只有data长或宽大于1才可能是选区
-                    if (result.cell > 1 || result.rowl > 1) {
+                    // =INDIRECT("I2") 计算结果为 result.data = "J2"
+                    if (result.cell > 1 || result.rowl > 1 || getObjType(result.data) == "string" || getObjType(result.data) == "number") {
                         result = result.data;
-                    } //否则就是单个不为null的没有值v的单元格
+                    } // 否则就是单个不为null的没有值v的单元格
                     else {
                         result = 0;
                     }
@@ -6121,6 +6142,70 @@ const luckysheetformula = {
     functionResizeStatus: false,
     functionResizeTimeout: null,
     data_parm_index: 0, //选择公式后参数索引标记
+
+    // 点中指定的公式，展示刷新按钮
+    cellFocus:function(row_index, col_index) {
+        const file = Store.luckysheetfile[getSheetIndex(Store.currentSheetIndex)];
+        if(file.calcChain){
+            let txt = ''
+            file.calcChain?.find(({ r, c, func }) => {
+                if(r === row_index && c === col_index){
+                    txt = Store.flowdata[r][c]?.f;
+                    return true
+                }
+            });
+            if(txt.indexOf('=GET_AIRTABLE_DATA') === 0){
+                this.showButton(row_index, col_index)
+                this.addButtonListener(txt,row_index, col_index,)
+            }else{
+                this.hideButton()
+            }
+        }
+
+        
+    },
+    addButtonListener:function(txt, r, c){
+        let listener =  $("#luckysheet-formula-refresh").data("listener")
+
+        if(!listener){
+            console.info('listener')
+            $("#luckysheet-formula-refresh").data("listener","true")
+            $("#luckysheet-formula-refresh").on('click',(e)=>{
+                this.execFunctionGroupForce(true);
+                jfrefreshgrid()
+                e.stopPropagation();
+            })
+        }
+        
+    },
+    showButton: function(r, c) {
+
+        let _this = this;
+
+        let row = Store.visibledatarow[r],
+            row_pre = r == 0 ? 0 : Store.visibledatarow[r - 1];
+        let col = Store.visibledatacolumn[c],
+            col_pre = c == 0 ? 0 : Store.visibledatacolumn[c - 1];
+
+        let margeset = menuButton.mergeborer(Store.flowdata, r, c);
+        if(!!margeset){
+            row = margeset.row[1];
+            row_pre = margeset.row[0];
+            
+            col = margeset.column[1];
+            col_pre = margeset.column[0];
+        }
+
+        $("#luckysheet-formula-refresh").show().css({
+            'max-width': col - col_pre,
+            'max-height': row - row_pre,
+            'left': col - 20,
+            'top': row_pre + (row - row_pre - 20) / 2
+        })
+    },
+    hideButton: function() {
+        $("#luckysheet-formula-refresh").hide()
+    }
 };
 
 export default luckysheetformula;

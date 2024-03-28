@@ -4,9 +4,12 @@
 
 </div>
 
-# Luckysheet 3.x 已更名为 [Univer](https://github.com/dream-num/univer)
-
 简体中文 | [English](./README.md)
+
+# Luckysheet 已不再维护，推荐使用 [Univer](https://github.com/dream-num/univer) 替代
+
+点击 [#1454](https://github.com/dream-num/Luckysheet/issues/1454) 查看更多详情。
+
 
 ## 介绍
 🚀Luckysheet ，一款纯前端类似excel的在线表格，功能强大、配置简单、完全开源。
@@ -127,19 +130,17 @@ npm run build
 
 ## 合作项目
 
-- [鲁班h5](https://github.com/ly525/luban-h5)
 - [h5-Dooring](https://github.com/MrXujiang/h5-Dooring)
-- [Furion](https://gitee.com/monksoul/Furion)
-- [AFFiNE.PRO](https://github.com/toeverything/AFFiNE)
 
 ## 交流
 
+- [官网](http://lucky.lashuju.com/index.html)
 - [Github 论坛](https://github.com/mengshukeji/Luckysheet/discussions)
 - 以下扫码加入官方微信群或者QQ群
 
-|  加小编微信:dushusir2，备注:加群  | QQ群:767964895 |
-|---|---|
-|<img src="https://cdn.jsdelivr.net/gh/mengshukeji/LuckyResources@master/assets/img/wechat/dushusir_wechat.jpg" width="200" />| <img src="https://cdn.jsdelivr.net/gh/mengshukeji/LuckyResources@master/assets/img/wechat/luckysheet_qq_group_2.jpeg" width="200" /> |
+加小编微信: msuniver，备注:加群
+
+<img src="https://gcore.jsdelivr.net/gh/mengshukeji/LuckyResources@master/assets/img/wechat/univer-wechat.jpg" width="200" />
 
 
 [英文社群](./README.md)
@@ -272,6 +273,26 @@ Luckysheet是MIT许可的开源项目，其持续稳定的开发离不开这些�
 - 快意江湖 ¥ 50
 - *新 ¥ 9.9
 - **龙 ¥ 100
+- **江 ¥ 100
+- **威 ¥ 9.8
+- **涛 ¥ 500
+- **嘉 ¥ 10
+- *涛 ¥ 1
+- *兵 ¥ 5
+- *阳 ¥ 200
+- *辉 ¥ 1
+- *帆 ¥ 30
+- **旺 ¥ 10
+- **麟 ¥ 20
+- *霖 ¥ 9.9
+- *帅 ¥ 10
+- *鑫 ¥ 6.66
+- ~朴:shu ¥ 29.79
+- 未来 ¥ 1
+- 国勇 ¥ 0.1
+- 用心灵听雨 ¥ 10
+- 钊 ¥ 5
+- 星稀 ¥ 5
 
 ## 贡献者和感谢
 

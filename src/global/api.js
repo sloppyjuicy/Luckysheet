@@ -199,6 +199,8 @@ export function setCellValue(row, column, value, options = {}) {
             }
             if(value.f!=null){
                 curv.f = value.f;
+            } else {
+                formula.delFunctionGroup(row, column);
             }
             if(value.v!=null){
                 curv.v = value.v;
@@ -209,7 +211,6 @@ export function setCellValue(row, column, value, options = {}) {
             if(value.m!=null){
                 curv.m = value.m;
             }
-            formula.delFunctionGroup(row, column);
             setcellvalue(row, column, data, curv);//update text value
         }
         for(let attr in value){
@@ -3888,7 +3889,7 @@ export function setRangeConditionalFormatDefault(conditionName, conditionValue, 
     else if(conditionName == 'regExp') {
         conditionValue2.push(...conditionValue);
     }
-    else if(condtionName == 'sort') {
+    else if(conditionName == 'sort') {
         conditionValue2.push(...conditionValue);
     }
 
@@ -5914,12 +5915,50 @@ export function getAllSheets() {
 
         delete item.load;
         delete item.freezen;
-
     })
 
     return data;
 }
 
+export function getAllChartsBase64(cb) {
+    let data = $.extend(true, [], Store.luckysheetfile);
+    const chartMap = {}
+
+    data.forEach((item, index, arr) => {
+        if(item.hasOwnProperty('chart') && item.chart.length > 0){
+            chartMap[item.index] = {}
+            item.chart.forEach((chartInfo) => {
+                const chartDom = document.querySelector(`#${chartInfo.chart_id}`);
+                const chartInstance = echarts.getInstanceByDom(chartDom);
+                chartInstance.resize({width:chartInfo.width,height: chartInfo.height,animation: {
+                    duration: 0
+                }})
+
+                chartMap[item.index][chartInfo.chart_id] = chartInstance
+                
+            });
+
+        }
+    })
+
+    setTimeout(() => {
+        for (const index in chartMap) {
+            if (Object.hasOwnProperty.call(chartMap, index)) {
+                const sheet = chartMap[index];
+                for (const chart_id in sheet) {
+                    if (Object.hasOwnProperty.call(sheet, chart_id)) {
+                        const chartInstance = sheet[chart_id];
+                        sheet[chart_id] = chartInstance.getDataURL();
+                    }
+                }
+                
+            }
+        }
+        cb && cb(chartMap)
+        
+    }, 500);
+    
+}
 
 /**
  * 根据index获取sheet页配置

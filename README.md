@@ -9,9 +9,11 @@
 
 </div>
 
-# Luckysheet 3.x has been renamed to [Univer](https://github.com/dream-num/univer)
-
 English| [简体中文](./README-zh.md)
+
+# Luckysheet is no longer maintained, please use [Univer](https://github.com/dream-num/univer) instead!
+
+Follow the [#1454](https://github.com/dream-num/Luckysheet/issues/1454) issue for more details.
 
 ## Introduction
 🚀Luckysheet is an online spreadsheet like excel that is powerful, simple to configure, and completely open source.
@@ -132,12 +134,11 @@ npm run build
 
 ## Partner project
 
-- [luban-h5](https://github.com/ly525/luban-h5)
 - [h5-Dooring](https://github.com/MrXujiang/h5-Dooring)
-- [Furion](https://gitee.com/monksoul/Furion)
-- [AFFiNE.PRO](https://github.com/toeverything/AFFiNE)
 
 ## Communication
+
+- [WebSite](http://lucky.lashuju.com/index.html)
 - [Github Discussions](https://github.com/mengshukeji/Luckysheet/discussions)
 - [Gitter](https://gitter.im/mengshukeji/Luckysheet)
 
@@ -271,6 +272,26 @@ Funds donated via Patreon go directly to support mengshukeji's work on Luckyshee
 - 快意江湖 ¥ 50
 - *新 ¥ 9.9
 - **龙 ¥ 100
+- **江 ¥ 100
+- **威 ¥ 9.8
+- **涛 ¥ 500
+- **嘉 ¥ 10
+- *涛 ¥ 1
+- *兵 ¥ 5
+- *阳 ¥ 200
+- *辉 ¥ 1
+- *帆 ¥ 30
+- **旺 ¥ 10
+- **麟 ¥ 20
+- *霖 ¥ 9.9
+- *帅 ¥ 10
+- *鑫 ¥ 6.66
+- ~朴:shu ¥ 29.79
+- 未来 ¥ 1
+- 国勇 ¥ 0.1
+- 用心灵听雨 ¥ 10
+- 钊 ¥ 5
+- 星稀 ¥ 5
 
 ## Authors and acknowledgment
 
